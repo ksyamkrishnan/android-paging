@@ -17,29 +17,41 @@
 package com.example.android.codelabs.paging.ui
 
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.paging.PagedList
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.example.android.codelabs.paging.Injection
 import com.example.android.codelabs.paging.R
-import com.example.android.codelabs.paging.model.Repo
+import com.zhuinden.monarchy.Monarchy
+import io.realm.RealmConfiguration
 import kotlinx.android.synthetic.main.activity_search_repositories.*
+
+
 
 class SearchRepositoriesActivity : AppCompatActivity() {
 
     private lateinit var viewModel: SearchRepositoriesViewModel
     private val adapter = ReposAdapter()
+    private lateinit var monarchy: Monarchy
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search_repositories)
+
+        Monarchy.init(this) // need to call this only once
+        val mRealmConfiguration = RealmConfiguration.Builder()
+                .name("test.realm")
+                .schemaVersion(1) // skip if you are not managing
+                .deleteRealmIfMigrationNeeded()
+                .build()
+
+        monarchy = Monarchy.Builder()
+                .setRealmConfiguration(mRealmConfiguration)
+                .build()
 
         // get the view model
         viewModel = ViewModelProviders.of(this, Injection.provideViewModelFactory(this))
@@ -62,14 +74,13 @@ class SearchRepositoriesActivity : AppCompatActivity() {
 
     private fun initAdapter() {
         list.adapter = adapter
-        viewModel.repos.observe(this, Observer<PagedList<Repo>> {
-            Log.d("Activity", "list: ${it?.size}")
+        viewModel.repos.observeForever {
             showEmptyList(it?.size == 0)
             adapter.submitList(it)
-        })
-        viewModel.networkErrors.observe(this, Observer<String> {
+        }
+        /*viewModel.networkErrors.observe(this, Observer<String> {
             Toast.makeText(this, "\uD83D\uDE28 Wooops $it", Toast.LENGTH_LONG).show()
-        })
+        })*/
     }
 
     private fun initSearch(query: String) {
@@ -116,5 +127,9 @@ class SearchRepositoriesActivity : AppCompatActivity() {
     companion object {
         private const val LAST_SEARCH_QUERY: String = "last_search_query"
         private const val DEFAULT_QUERY = "Android"
+    }
+
+     fun getMonarchy(): Monarchy {
+        return monarchy
     }
 }

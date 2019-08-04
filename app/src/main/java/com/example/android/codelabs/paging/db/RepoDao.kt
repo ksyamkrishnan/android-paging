@@ -16,6 +16,7 @@
 
 package com.example.android.codelabs.paging.db
 
+/*
 import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Insert
@@ -23,9 +24,11 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.android.codelabs.paging.model.Repo
 
+*/
 /**
  * Room data access object for accessing the [Repo] table.
- */
+ *//*
+
 @Dao
 interface RepoDao {
 
@@ -38,4 +41,22 @@ interface RepoDao {
     @Query("SELECT * FROM repos WHERE (name LIKE :queryString) OR (description LIKE " +
             ":queryString) ORDER BY stars DESC, name ASC")
     fun reposByName(queryString: String): DataSource.Factory<Int,Repo>
+}
+*/
+import com.example.android.codelabs.paging.model.RepoRealm
+import com.zhuinden.monarchy.Monarchy
+
+class RepoDao(val monarchy: Monarchy) {
+    private lateinit var datasource: Monarchy.RealmDataSourceFactory<RepoRealm>
+    fun insert(repos: List<RepoRealm>) {
+       monarchy.writeAsync {
+           realm -> realm.insert(repos)
+       }
+    }
+
+    fun reposByName(name: String): Monarchy.RealmDataSourceFactory<RepoRealm> {
+        datasource = monarchy.createDataSourceFactory<RepoRealm> { realm -> realm.where(RepoRealm::class.java) }
+        return datasource
+
+    }
 }

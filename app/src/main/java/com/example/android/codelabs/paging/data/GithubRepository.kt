@@ -16,16 +16,20 @@
 
 package com.example.android.codelabs.paging.data
 
-import androidx.paging.LivePagedListBuilder
 import android.util.Log
+import androidx.paging.DataSource
+import androidx.paging.LivePagedListBuilder
 import com.example.android.codelabs.paging.api.GithubService
 import com.example.android.codelabs.paging.db.GithubLocalCache
+import com.example.android.codelabs.paging.model.Repo
 import com.example.android.codelabs.paging.model.RepoSearchResult
+import com.zhuinden.monarchy.Monarchy
 
 /**
  * Repository class that works with local and remote data sources.
  */
 class GithubRepository(
+        private val monarchy: Monarchy,
     private val service: GithubService,
     private val cache: GithubLocalCache
 ) {
@@ -37,18 +41,27 @@ class GithubRepository(
         Log.d("GithubRepository", "New query: $query")
 
         // Get data source factory from the local cache
-        val dataSourceFactory = cache.reposByName(query)
+        val realmDataSourceFactory = cache.reposByName(query)
 
         // every new query creates a new BoundaryCallback
         // The BoundaryCallback will observe when the user reaches to the edges of
-        // the list and update the database with extra data
+        // the list and update the database with extra datagit
         val boundaryCallback = RepoBoundaryCallback(query, service, cache)
         val networkErrors = boundaryCallback.networkErrors
 
         // Get the paged list
-        val data = LivePagedListBuilder(dataSourceFactory, DATABASE_PAGE_SIZE)
+        /*val data = LivePagedListBuilder(dataSourceFactory, DATABASE_PAGE_SIZE)
                 .setBoundaryCallback(boundaryCallback)
                 .build()
+*/
+        var dataSourceFactory = (realmDataSourceFactory.map { input ->
+            Repo(input.id,input.name,input.fullName,input.description,
+                    input.url,input.stars,input.forks,input.language)
+
+        } ) as DataSource.Factory<Int, Repo>
+        val data = monarchy.findAllPagedWithChanges(
+                realmDataSourceFactory,
+                LivePagedListBuilder<Int, Repo>(dataSourceFactory, DATABASE_PAGE_SIZE).setBoundaryCallback(boundaryCallback))
 
         // Get the network errors exposed by the boundary callback
         return RepoSearchResult(data, networkErrors)

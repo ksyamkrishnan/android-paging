@@ -41,10 +41,10 @@ class ReposAdapter : PagedListAdapter<Repo, RecyclerView.ViewHolder>(REPO_COMPAR
     companion object {
         private val REPO_COMPARATOR = object : DiffUtil.ItemCallback<Repo>() {
             override fun areItemsTheSame(oldItem: Repo, newItem: Repo): Boolean =
-                    oldItem.fullName == newItem.fullName
+                    oldItem.id == newItem.id
 
             override fun areContentsTheSame(oldItem: Repo, newItem: Repo): Boolean =
-                    oldItem == newItem
+                    oldItem.name == newItem.name
         }
     }
 }

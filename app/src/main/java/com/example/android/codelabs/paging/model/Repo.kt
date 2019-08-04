@@ -16,16 +16,19 @@
 
 package com.example.android.codelabs.paging.model
 
+/*
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
+*/
 /**
  * Immutable model class for a Github repo that holds all the information about a repository.
  * Objects of this type are received from the Github API, therefore all the fields are annotated
  * with the serialized name.
  * This class also defines the Room repos table, where the repo [id] is the primary key.
- */
+ *//*
+
 @Entity(tableName = "repos")
 data class Repo(
     @PrimaryKey @field:SerializedName("id") val id: Long,
@@ -36,4 +39,16 @@ data class Repo(
     @field:SerializedName("stargazers_count") val stars: Int,
     @field:SerializedName("forks_count") val forks: Int,
     @field:SerializedName("language") val language: String?
+)
+*/
+
+data class Repo (
+        var id: Long = 0L,
+        var name: String? = "",
+        var fullName: String? = "",
+        var description: String? = "",
+        var url: String? = "",
+        var stars: Int = 0,
+        var forks: Int = 0,
+        var language: String? = ""
 )

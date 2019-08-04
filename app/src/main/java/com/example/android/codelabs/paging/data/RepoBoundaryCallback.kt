@@ -16,14 +16,15 @@
 
 package com.example.android.codelabs.paging.data
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.PagedList
-import android.util.Log
 import com.example.android.codelabs.paging.api.GithubService
 import com.example.android.codelabs.paging.api.searchRepos
 import com.example.android.codelabs.paging.db.GithubLocalCache
 import com.example.android.codelabs.paging.model.Repo
+import com.example.android.codelabs.paging.model.RepoRealm
 
 /**
  * This boundary callback gets notified when user reaches to the edges of the list for example when
@@ -71,7 +72,19 @@ class RepoBoundaryCallback(
 
         isRequestInProgress = true
         searchRepos(service, query, lastRequestedPage, NETWORK_PAGE_SIZE, { repos ->
-            cache.insert(repos) {
+            var listRealmRepo: List<RepoRealm> = repos.map { repo ->
+                var realmrepo = RepoRealm()
+                realmrepo.id = repo.id
+                realmrepo.name = repo.name
+                realmrepo.fullName = repo.fullName
+                realmrepo.description = repo.description
+                realmrepo.url = repo.url
+                realmrepo.language = repo.language
+                realmrepo.stars = repo.stars
+                realmrepo.forks = repo.forks
+                return@map realmrepo
+            }
+            cache.insert(listRealmRepo) {
                 lastRequestedPage++
                 isRequestInProgress = false
             }

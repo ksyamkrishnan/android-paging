@@ -21,7 +21,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.android.codelabs.paging.api.GithubService
 import com.example.android.codelabs.paging.data.GithubRepository
 import com.example.android.codelabs.paging.db.GithubLocalCache
-import com.example.android.codelabs.paging.db.RepoDatabase
+import com.example.android.codelabs.paging.db.RepoDao
+import com.example.android.codelabs.paging.ui.SearchRepositoriesActivity
 import com.example.android.codelabs.paging.ui.ViewModelFactory
 import java.util.concurrent.Executors
 
@@ -36,8 +37,10 @@ object Injection {
      * Creates an instance of [GithubLocalCache] based on the database DAO.
      */
     private fun provideCache(context: Context): GithubLocalCache {
-        val database = RepoDatabase.getInstance(context)
-        return GithubLocalCache(database.reposDao(), Executors.newSingleThreadExecutor())
+        val searchRepositoriesActivity = context as SearchRepositoriesActivity
+        var monarchy = searchRepositoriesActivity.getMonarchy()
+
+        return GithubLocalCache(RepoDao(monarchy), Executors.newSingleThreadExecutor())
     }
 
     /**
@@ -45,7 +48,9 @@ object Injection {
      * [GithubLocalCache]
      */
     private fun provideGithubRepository(context: Context): GithubRepository {
-        return GithubRepository(GithubService.create(), provideCache(context))
+        val searchRepositoriesActivity = context as SearchRepositoriesActivity
+        var monarchy = searchRepositoriesActivity.getMonarchy()
+        return GithubRepository(monarchy, GithubService.create(), provideCache(context))
     }
 
     /**
